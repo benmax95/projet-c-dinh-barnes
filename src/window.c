@@ -87,10 +87,8 @@ void hover_add(int hover){
 void draw_new_constraint_point(int x, int y, MLV_Color color, int side){
 	if(!side){
 		draw_image(leftImage, 10, 10);
-		draw_all_constraint_points();
 	}else{
 		draw_image(rightImage, 542, 10);
-		draw_all_constraint_points();
 	}
 	MLV_draw_filled_circle(x,y,3,color);
 	actualise_window();

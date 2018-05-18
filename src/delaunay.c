@@ -8,25 +8,18 @@ struct _constraintPoint{
 };
 
 struct _pair{
-		constraintPoint*       source;
-		constraintPoint*       destination;
-};
-
-struct _setOfPair {
-		pair*   pair;
-		struct _setOfPair* next;
+	constraintPoint* source;
+	constraintPoint* destination;
+	struct _pair* next;
 };
 
 struct _triangle{
 	constraintPoint* cp_A;
 	constraintPoint* cp_B;
 	constraintPoint* cp_C;
+	struct _triangle* next;
 };
 
-struct _setOfTriangle {
-		triangle*   triangle;
-		struct _setOfTriangle* next;
-};
 
 
 /* constraintPoint Part */
@@ -63,116 +56,86 @@ void free_pair(pair *p) {
 	
 }
 
-/* setOfPair Part */
-
-setOfPair *create_setOfPair() {
-	
-	setOfPair *s = (setOfPair*)malloc(sizeof(setOfPair));
-	
-	s->next=NULL;
-	
-	return s;
-}
-
-void add_setOfPair(constraintPoint *constraintPointSource, constraintPoint *constraintPointDestination, setOfPair *s){
-	
-	pair *pair = create_pair(constraintPointSource,constraintPointDestination);
-	
-	setOfPair *new_s = create_setOfPair();
-	
-	new_s->pair = pair;
-	s->next = new_s;
-	
-}
-
-pair *remove_setOfPair(setOfPair *s) {
-	
-	if(s == NULL){
-		return NULL;
-	}
-	
-	pair *pair = s->pair;
-	
-	return pair;
-	
-}
-
-void free_setOfPair(setOfPair *s) {
-	
-	while(s){
-		pair *pair = s->pair ;
-		free_pair(pair) ;
-		s=s->next ;
-	}
-	
-	free(s);
-	
-}
-
 /* Triangle Part */
 
 triangle *create_triangle(constraintPoint *cp_A, constraintPoint *cp_B, constraintPoint *cp_C) {
 	
 	triangle *t = (triangle*)malloc(sizeof(triangle));
 
-	t->cp_A = cp_A;
-	t->cp_B = cp_B;
-	t->cp_C = cp_C;
+	t->cp_A = cp_A ;
+	t->cp_B = cp_B ;
+	t->cp_C = cp_C ;
+	
+	t->next = NULL ;
 	
 	return t;
 	
 }
 
-/* setOfTriangle Part */
-
-setOfTriangle *create_setOfTriangle() {
+triangle *remove_list(triangle *lst, triangle *t) {
 	
-	setOfTriangle *s = (setOfTriangle*)malloc(sizeof(setOfTriangle));
-
-	s->next=NULL;
-	
-	return s;
-}
-
-
-void add_setOfTriangle(constraintPoint *cp_A, constraintPoint *cp_B, constraintPoint *cp_C, setOfTriangle *s){
-	
-	triangle *t = create_triangle(cp_A, cp_B, cp_C);
-	
-	setOfTriangle *new_s = create_setOfTriangle();
-	
-	new_s->triangle = t;
-	
-	s->next = new_s;
-	
-}
-
-triangle* remove_setOfTriangle(setOfTriangle *s) {
-
-	if(s==NULL){
+	if (lst == NULL)
 		return NULL;
+	
+	if (lst == t) {
+		
+		triangle *tmp = lst;
+		lst = lst->next;
+		
+		free(tmp);
+		
+		return lst;
+	}
+
+	triangle *ptr = lst->next;
+	triangle *pred = lst;
+	
+	while (ptr != NULL && ptr != t) {
+		pred = ptr;
+		
+		ptr = ptr->next;
 	}
 	
-	triangle *t = s->triangle;
-	
-	return t;
-	
-}
-
-void free_triangle(triangle *t) {
-	
-	free(t);
-	
-}
-
-void free_setOfTriangle(setOfTriangle *s) {
-	
-	while(s){
-		triangle *t = s->triangle;
-		free_triangle(t);
-		s=s->next;
+	if (ptr != NULL) {
+		
+		triangle *tmp = ptr;
+		pred->next = ptr->next;
+		
+		free(tmp);
 	}
 	
-	free(s);
+	return lst;
+}
+
+int is_in_triangle(constraintPoint *cp, triangle *t){
+	
+	int x_cp = cp->x ;
+	int y_cp = cp->y ;
+	
+	int vector_cp_a_x = t->cp_A->x - x_cp ;
+	int vector_cp_a_y = t->cp_A->y - y_cp ;
+	
+	int vector_cp_b_x = t->cp_B->x - x_cp ;
+	int vector_cp_b_y = t->cp_B->y - y_cp ;
+	
+	int vector_cp_c_x = t->cp_C->x - x_cp ;
+	int vector_cp_c_y = t->cp_C->y - y_cp ;
+	
+	int res_a = (vector_cp_b_x * vector_cp_c_y) - (vector_cp_b_y * vector_cp_c_x) ;
+	
+	int res_b = (vector_cp_c_x * vector_cp_a_y) - (vector_cp_c_y * vector_cp_a_x) ;
+	
+	int res_c = (vector_cp_a_x * vector_cp_b_y) - (vector_cp_a_y * vector_cp_b_x) ;
+	
+	if( (res_a <= 0) && (res_b <= 0) && (res_c <= 0)){
+		res_a *= -1 ;
+		res_b *= -1 ;
+		res_c *= -1 ;
+	}
+	
+	if(res_a >= 0 && res_b >= 0 && res_c >= 0)
+		return 1;
+	
+	return 0 ;
 	
 }
